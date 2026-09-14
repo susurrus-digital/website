@@ -22,10 +22,35 @@ body {
 .stage {
   min-height: 100vh;
   min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   padding: 24px;
+}
+
+.stage > * {
+  grid-area: 1 / 1;
+}
+
+.quote {
+  margin: 0;
+  max-width: min(640px, 88vw);
+  padding: 0 12px;
+  font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 200;
+  font-size: clamp(0.75rem, 0.5625rem + 0.9vw, 1.3125rem);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: #e9e7dc;
+  opacity: 0;
+}
+
+.quote-intro {
+  animation: quote-reveal 7s ease-in-out forwards;
+}
+
+.quote-detail {
+  animation: quote-reveal 7s ease-in-out 6s forwards;
 }
 
 .logo {
@@ -35,4 +60,42 @@ body {
   max-width: min(560px, 100%);
   max-height: 70vh;
   max-height: 70dvh;
+  opacity: 0;
+  animation: logo-reveal 1.5s ease-out 12s forwards;
+}
+
+@keyframes quote-reveal {
+  0% {
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  86% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes logo-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quote-intro,
+  .quote-detail {
+    display: none;
+  }
+
+  .logo {
+    opacity: 1;
+    animation: none;
+  }
 }
