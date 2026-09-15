@@ -1,5 +1,20 @@
 :root {
   --susurrus-bg: #3c5246;
+
+  /* Single source of truth for the quote timeline. script.js reads the
+     *computed* animation-delay off the quote elements (not these variables
+     directly, since raw calc() custom properties aren't resolved by
+     getPropertyValue) so it always matches whatever these resolve to.
+     Quote 1's fade-out is a longer crossfade so the leaf effect has room to
+     be seen before quote 2 begins to appear; the two no longer overlap. */
+  --quote-fade-in: 1s;
+  --quote-fade-out: 2.5s;
+  --quote1-hold: 5s;
+  --quote2-hold: 8s;
+  --quote1-delay: 0s;
+  --quote1-fadeout-delay: calc(var(--quote1-delay) + var(--quote-fade-in) + var(--quote1-hold));
+  --quote2-delay: calc(var(--quote1-fadeout-delay) + var(--quote-fade-out));
+  --quote2-fadeout-delay: calc(var(--quote2-delay) + var(--quote-fade-in) + var(--quote2-hold));
 }
 
 * {
@@ -46,11 +61,15 @@ body {
 }
 
 .quote-intro {
-  animation: quote-reveal 10s ease-in-out forwards;
+  animation:
+    quote-in var(--quote-fade-in) ease-in-out var(--quote1-delay) forwards,
+    quote-out var(--quote-fade-out) ease-in-out var(--quote1-fadeout-delay) forwards;
 }
 
 .quote-detail {
-  animation: quote-reveal 10s ease-in-out 9s forwards;
+  animation:
+    quote-in var(--quote-fade-in) ease-in-out var(--quote2-delay) forwards,
+    quote-out var(--quote-fade-out) ease-in-out var(--quote2-fadeout-delay) forwards;
 }
 
 .logo {
@@ -61,25 +80,81 @@ body {
   max-height: 70vh;
   max-height: 70dvh;
   opacity: 0;
-  animation: logo-reveal 1.5s ease-out 18s forwards;
+  transition: opacity 1.2s ease-out;
 }
 
-@keyframes quote-reveal {
-  0% {
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+.logo.visible {
+  opacity: 1;
 }
 
-@keyframes logo-reveal {
+.leaf-burst,
+.book-burst,
+.dot-field {
+  position: relative;
+  pointer-events: none;
+}
+
+.leaf {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--size);
+  height: var(--size);
+  fill: none;
+  stroke: #e9e7dc;
+  stroke-width: 2.5;
+  opacity: 0;
+  transform: translate(-50%, -50%) translate(var(--x0), var(--y0)) rotate(var(--rot0))
+    scale(0.6);
+}
+
+.leaf-burst.burst .leaf {
+  animation: leaf-fly var(--duration) var(--delay) cubic-bezier(0.3, 0, 0.6, 1) forwards;
+}
+
+/* Quote 2 dissolves into a row of book spines that topple over, then dots
+   rise from their base and gather into the logo's own silhouette before the
+   crisp logo image crossfades in on top. */
+
+.book {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--w);
+  height: var(--h);
+  border: 1.5px solid #e9e7dc;
+  border-radius: 2px;
+  opacity: 0;
+  transform-origin: 50% 100%;
+  transform: translate(-50%, -100%) translate(var(--x0), var(--base-y)) rotate(0deg);
+}
+
+.book-burst.burst .book {
+  animation: book-fall var(--duration) var(--delay) cubic-bezier(0.5, 0, 0.75, 0) forwards;
+}
+
+.dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: #d1a94a;
+  opacity: 0;
+  transform: translate(-50%, -50%) translate(var(--x0), var(--y0)) scale(0.4);
+}
+
+.dot-field.rise .dot {
+  animation: dot-rise var(--duration) var(--delay) cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.dot-field.settle {
+  transition: opacity 1.2s ease-in;
+  opacity: 0;
+}
+
+@keyframes quote-in {
   from {
     opacity: 0;
   }
@@ -88,14 +163,84 @@ body {
   }
 }
 
+@keyframes quote-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes leaf-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--x0), var(--y0)) rotate(var(--rot0))
+      scale(0.6);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(var(--x0), var(--y0)) rotate(var(--rot0))
+      scale(1);
+  }
+  65% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(calc(var(--x0) + var(--dx)), calc(var(--y0) + var(--dy))) rotate(var(--rot1))
+      scale(0.85);
+  }
+}
+
+@keyframes book-fall {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -100%) translate(var(--x0), var(--base-y)) rotate(0deg);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -100%) translate(var(--x0), var(--base-y)) rotate(0deg);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -100%) translate(var(--x0), var(--base-y)) rotate(var(--fall-rot));
+  }
+}
+
+@keyframes dot-rise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--x0), var(--y0)) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(var(--x0), var(--y0)) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .quote-intro,
-  .quote-detail {
+  .quote-detail,
+  .leaf-burst,
+  .book-burst,
+  .dot-field {
     display: none;
   }
 
   .logo {
     opacity: 1;
-    animation: none;
+    transition: none;
   }
 }
