@@ -1,0 +1,6 @@
+# Source documents used to write site content — contain personal contact
+# details and shouldn't be deployed to the public GitHub Pages site.
+assets/*.pdf
+assets/BenDoyleBio.png
+assets/BenDoyleBio2.png
+assets/.BenDoyleBio2.png

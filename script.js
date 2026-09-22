@@ -1,7 +1,57 @@
 (function () {
   "use strict";
 
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var SCROLL_CUE_DELAY_MS = 2000;
+
+  // Reveals the "scroll for more" cue two seconds after the logo finishes
+  // appearing. Watches for the .visible class the logo gains once its own
+  // reveal sequence completes, rather than duplicating that sequence's
+  // timing here. Runs independently of the particle animations below so it
+  // still works under prefers-reduced-motion, where the logo is shown
+  // immediately via CSS instead of through the JS sequence.
+  function initScrollCue() {
+    var scrollCue = document.querySelector(".scroll-cue");
+    var stage = document.querySelector(".stage");
+    var logo = document.querySelector(".logo");
+    if (!scrollCue || !stage || !logo) return;
+
+    // Once the cue has had its chance to appear, hide it once the user has
+    // scrolled meaningfully into the stage (so it doesn't sit fixed on top
+    // of the bio section) and restore it near the top.
+    function watchStageVisibility() {
+      function update() {
+        var threshold = stage.getBoundingClientRect().height * 0.5;
+        scrollCue.classList.toggle("stage-hidden", window.scrollY > threshold);
+      }
+      window.addEventListener("scroll", update, { passive: true });
+      update();
+    }
+
+    function reveal() {
+      setTimeout(function () {
+        scrollCue.classList.add("visible");
+        watchStageVisibility();
+      }, SCROLL_CUE_DELAY_MS);
+    }
+
+    if (reducedMotion || logo.classList.contains("visible")) {
+      reveal();
+      return;
+    }
+
+    var observer = new MutationObserver(function () {
+      if (logo.classList.contains("visible")) {
+        observer.disconnect();
+        reveal();
+      }
+    });
+    observer.observe(logo, { attributes: true, attributeFilter: ["class"] });
+  }
+
+  initScrollCue();
+
+  if (reducedMotion) {
     return;
   }
 
@@ -53,26 +103,44 @@
     });
   }
 
+  // Subtle per-particle brightness/hue jitter (consumed by a CSS `filter`)
+  // so a field of identical shapes doesn't read as mechanically-stamped
+  // copies of one another.
+  function tintVars() {
+    return {
+      "--tint-b": rand(0.88, 1.12).toFixed(2),
+      "--tint-h": rand(-10, 10).toFixed(1) + "deg",
+    };
+  }
+
   // ---------------------------------------------------------------------
   // Quote 1 -> wind-blown leaves
   // ---------------------------------------------------------------------
 
   var LEAF_COUNT = 22;
-  var LEAF_PATH = "M0 -28 C16 -14 18 14 0 30 C-18 14 -16 -14 0 -28 Z";
-  var LEAF_VEIN_PATH = "M0 -22 L0 24";
+
+  // A few different silhouettes (each with a matching vein) so 22 leaves
+  // don't read as one shape copy-pasted at different sizes.
+  var LEAF_VARIANTS = [
+    { shape: "M0 -28 C16 -14 18 14 0 30 C-18 14 -16 -14 0 -28 Z", vein: "M0 -22 L0 24" },
+    { shape: "M0 -26 C20 -18 14 18 0 29 C-10 12 -16 -10 0 -26 Z", vein: "M0 -20 Q6 4 0 23" },
+    { shape: "M0 -30 C10 -20 20 6 0 28 C-20 6 -10 -20 0 -30 Z", vein: "M0 -24 Q-4 0 0 22" },
+  ];
 
   function createLeaf(spreadX, spreadY, centerX, viewportWidth, edgeMargin) {
     var svg = document.createElementNS(SVG_NS, "svg");
     svg.setAttribute("viewBox", "-32 -32 64 64");
     svg.classList.add("leaf");
 
+    var variant = LEAF_VARIANTS[Math.floor(Math.random() * LEAF_VARIANTS.length)];
+
     var shape = document.createElementNS(SVG_NS, "path");
-    shape.setAttribute("d", LEAF_PATH);
+    shape.setAttribute("d", variant.shape);
     shape.setAttribute("vector-effect", "non-scaling-stroke");
     svg.appendChild(shape);
 
     var vein = document.createElementNS(SVG_NS, "path");
-    vein.setAttribute("d", LEAF_VEIN_PATH);
+    vein.setAttribute("d", variant.vein);
     vein.setAttribute("vector-effect", "non-scaling-stroke");
     svg.appendChild(vein);
 
@@ -90,17 +158,23 @@
     var dx = rand(dxMin, dxMax);
 
     var rot0 = rand(-15, 15);
-    setVars(svg, {
-      "--size": rand(16, 32).toFixed(1) + "px",
-      "--x0": x0.toFixed(1) + "px",
-      "--y0": y0.toFixed(1) + "px",
-      "--dx": dx.toFixed(1) + "px",
-      "--dy": rand(-30, 30).toFixed(1) + "px",
-      "--rot0": rot0.toFixed(1) + "deg",
-      "--rot1": (rot0 + rand(70, 180)).toFixed(1) + "deg",
-      "--duration": rand(1.6, 2.3).toFixed(2) + "s",
-      "--delay": rand(0, 0.4).toFixed(2) + "s",
-    });
+    setVars(
+      svg,
+      Object.assign(
+        {
+          "--size": rand(16, 32).toFixed(1) + "px",
+          "--x0": x0.toFixed(1) + "px",
+          "--y0": y0.toFixed(1) + "px",
+          "--dx": dx.toFixed(1) + "px",
+          "--dy": rand(-30, 30).toFixed(1) + "px",
+          "--rot0": rot0.toFixed(1) + "deg",
+          "--rot1": (rot0 + rand(70, 180)).toFixed(1) + "deg",
+          "--duration": rand(1.6, 2.3).toFixed(2) + "s",
+          "--delay": rand(0, 0.4).toFixed(2) + "s",
+        },
+        tintVars()
+      )
+    );
 
     return svg;
   }
@@ -125,7 +199,7 @@
   // Quote 2 -> toppling book spines -> dots rising into the logo's shape
   // ---------------------------------------------------------------------
 
-  var BOOK_COUNT = 9;
+  var BOOK_COUNT = 18;
   var DOT_COUNT = 170;
   var DOT_PHASE_OFFSET_MS = 700; // dots start rising while books are still falling
   var DOT_SETTLE_HOLD_MS = 400; // brief pause once dots have formed the logo
@@ -135,15 +209,21 @@
     book.className = "book";
 
     var fallDir = Math.random() < 0.5 ? -1 : 1;
-    setVars(book, {
-      "--w": rand(12, 20).toFixed(1) + "px",
-      "--h": rand(46, 84).toFixed(1) + "px",
-      "--x0": rand(-spreadX, spreadX).toFixed(1) + "px",
-      "--base-y": baseY.toFixed(1) + "px",
-      "--fall-rot": (fallDir * rand(78, 98)).toFixed(1) + "deg",
-      "--duration": rand(0.9, 1.3).toFixed(2) + "s",
-      "--delay": rand(0, 0.55).toFixed(2) + "s",
-    });
+    setVars(
+      book,
+      Object.assign(
+        {
+          "--w": rand(12, 20).toFixed(1) + "px",
+          "--h": rand(46, 84).toFixed(1) + "px",
+          "--x0": rand(-spreadX, spreadX).toFixed(1) + "px",
+          "--base-y": baseY.toFixed(1) + "px",
+          "--fall-rot": (fallDir * rand(78, 98)).toFixed(1) + "deg",
+          "--duration": rand(0.9, 1.3).toFixed(2) + "s",
+          "--delay": rand(0, 0.55).toFixed(2) + "s",
+        },
+        tintVars()
+      )
+    );
 
     return book;
   }
@@ -192,6 +272,20 @@
       }
     }
 
+    // Some privacy-hardened browsers (e.g. Brave, Firefox strict mode) inject
+    // noise into canvas pixel reads for fingerprint resistance, which can
+    // silently corrupt this into a garbled scatter instead of throwing. A
+    // real logo silhouette with margin around it always lands within a
+    // plausible pixel-count band; outside that band, treat the read as
+    // unreliable and fall back to skipping the dot effect entirely rather
+    // than showing a broken/garbled formation.
+    var totalPixels = sampleW * sampleH;
+    var tooFew = candidates.length < 300;
+    var tooMany = candidates.length > totalPixels * 0.5;
+    if (tooFew || tooMany) {
+      return [];
+    }
+
     // Shuffle (Fisher-Yates) then take the requested count.
     for (var i = candidates.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -209,15 +303,21 @@
     var tx = point.nx * logoRect.width;
     var ty = point.ny * logoRect.height;
 
-    setVars(dot, {
-      "--size": rand(2.5, 5).toFixed(1) + "px",
-      "--x0": rand(-startSpreadX, startSpreadX).toFixed(1) + "px",
-      "--y0": (baseY + rand(-6, 10)).toFixed(1) + "px",
-      "--tx": tx.toFixed(1) + "px",
-      "--ty": ty.toFixed(1) + "px",
-      "--duration": rand(1.1, 1.7).toFixed(2) + "s",
-      "--delay": rand(0, 0.9).toFixed(2) + "s",
-    });
+    setVars(
+      dot,
+      Object.assign(
+        {
+          "--size": rand(2.5, 5).toFixed(1) + "px",
+          "--x0": rand(-startSpreadX, startSpreadX).toFixed(1) + "px",
+          "--y0": (baseY + rand(-6, 10)).toFixed(1) + "px",
+          "--tx": tx.toFixed(1) + "px",
+          "--ty": ty.toFixed(1) + "px",
+          "--duration": rand(1.1, 1.7).toFixed(2) + "s",
+          "--delay": rand(0, 0.9).toFixed(2) + "s",
+        },
+        tintVars()
+      )
+    );
 
     return dot;
   }
