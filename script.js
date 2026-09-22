@@ -12,26 +12,48 @@
   // immediately via CSS instead of through the JS sequence.
   function initScrollCue() {
     var scrollCue = document.querySelector(".scroll-cue");
-    var stage = document.querySelector(".stage");
     var logo = document.querySelector(".logo");
-    if (!scrollCue || !stage || !logo) return;
+    var bioPhoto = document.querySelector(".bio-photo");
+    var bioText = document.querySelector(".bio-text");
+    if (!scrollCue || !logo) return;
 
-    // Once the cue has had its chance to appear, hide it once the user has
-    // scrolled meaningfully into the stage (so it doesn't sit fixed on top
-    // of the bio section) and restore it near the top.
-    function watchStageVisibility() {
+    // Once the cue has had its chance to appear, hide it as soon as a
+    // quarter of either the bio photo or the bio text has scrolled into
+    // view (whichever comes first — they stack on narrow/mobile screens),
+    // and restore it if the user scrolls back above that point. Driven by
+    // IntersectionObserver rather than a scroll-position threshold so it
+    // tracks the actual content instead of viewport height, which is
+    // unreliable on mobile browsers as their chrome shows/hides.
+    function watchBioVisibility() {
+      var targets = [bioPhoto, bioText].filter(Boolean);
+      if (!targets.length) return;
+
+      var visible = Object.create(null);
       function update() {
-        var threshold = stage.getBoundingClientRect().height * 0.5;
-        scrollCue.classList.toggle("stage-hidden", window.scrollY > threshold);
+        var anyVisible = targets.some(function (el) {
+          return visible[el === bioPhoto ? "photo" : "text"];
+        });
+        scrollCue.classList.toggle("stage-hidden", anyVisible);
       }
-      window.addEventListener("scroll", update, { passive: true });
-      update();
+
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            visible[entry.target === bioPhoto ? "photo" : "text"] = entry.isIntersecting;
+          });
+          update();
+        },
+        { threshold: 0.25 }
+      );
+      targets.forEach(function (el) {
+        observer.observe(el);
+      });
     }
 
     function reveal() {
       setTimeout(function () {
         scrollCue.classList.add("visible");
-        watchStageVisibility();
+        watchBioVisibility();
       }, SCROLL_CUE_DELAY_MS);
     }
 
