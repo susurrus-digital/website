@@ -233,6 +233,40 @@ body {
   }
 }
 
+.tagline {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(64px, 12vh, 92px);
+  transform: translateX(-50%);
+  max-width: min(480px, 84vw);
+  margin: 0;
+  text-align: center;
+  color: #e9e7dc;
+  font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 200;
+  font-style: italic;
+  font-size: 0.7rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s ease-out;
+  z-index: 2;
+}
+
+.tagline-ipa {
+  font-style: normal;
+  opacity: 0.85;
+}
+
+.tagline.visible {
+  opacity: 0.6;
+}
+
+.tagline.stage-hidden {
+  opacity: 0;
+}
+
 .scroll-cue {
   position: fixed;
   left: 50%;
@@ -354,6 +388,7 @@ body {
   }
 
   .bio-photo {
+    width: 100%;
     max-width: 320px;
     margin: 0 auto;
   }

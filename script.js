@@ -4,23 +4,24 @@
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var SCROLL_CUE_DELAY_MS = 2000;
 
-  // Reveals the "scroll for more" cue two seconds after the logo finishes
-  // appearing. Watches for the .visible class the logo gains once its own
-  // reveal sequence completes, rather than duplicating that sequence's
-  // timing here. Runs independently of the particle animations below so it
-  // still works under prefers-reduced-motion, where the logo is shown
-  // immediately via CSS instead of through the JS sequence.
+  // Reveals the "scroll for more" cue and the pronunciation tagline two
+  // seconds after the logo finishes appearing. Watches for the .visible
+  // class the logo gains once its own reveal sequence completes, rather
+  // than duplicating that sequence's timing here. Runs independently of the
+  // particle animations below so it still works under
+  // prefers-reduced-motion, where the logo is shown immediately via CSS
+  // instead of through the JS sequence.
   function initScrollCue() {
-    var scrollCue = document.querySelector(".scroll-cue");
+    var introHints = document.querySelectorAll(".intro-hint");
     var logo = document.querySelector(".logo");
     var bioPhoto = document.querySelector(".bio-photo");
     var bioText = document.querySelector(".bio-text");
-    if (!scrollCue || !logo) return;
+    if (!introHints.length || !logo) return;
 
-    // Once the cue has had its chance to appear, hide it as soon as a
-    // quarter of either the bio photo or the bio text has scrolled into
+    // Once the hints have had their chance to appear, hide them as soon as
+    // a quarter of either the bio photo or the bio text has scrolled into
     // view (whichever comes first — they stack on narrow/mobile screens),
-    // and restore it if the user scrolls back above that point. Driven by
+    // and restore them if the user scrolls back above that point. Driven by
     // IntersectionObserver rather than a scroll-position threshold so it
     // tracks the actual content instead of viewport height, which is
     // unreliable on mobile browsers as their chrome shows/hides.
@@ -33,7 +34,9 @@
         var anyVisible = targets.some(function (el) {
           return visible[el === bioPhoto ? "photo" : "text"];
         });
-        scrollCue.classList.toggle("stage-hidden", anyVisible);
+        introHints.forEach(function (hint) {
+          hint.classList.toggle("stage-hidden", anyVisible);
+        });
       }
 
       var observer = new IntersectionObserver(
@@ -52,7 +55,9 @@
 
     function reveal() {
       setTimeout(function () {
-        scrollCue.classList.add("visible");
+        introHints.forEach(function (hint) {
+          hint.classList.add("visible");
+        });
         watchBioVisibility();
       }, SCROLL_CUE_DELAY_MS);
     }
