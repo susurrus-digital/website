@@ -40,6 +40,10 @@ body {
   display: grid;
   place-items: center;
   padding: 24px;
+  /* Particles can fly past the edges; without clipping, mobile browsers
+     widen the layout viewport to fit them, which pushes fixed overlays
+     below the visible screen. */
+  overflow-x: clip;
 }
 
 .stage > * {
@@ -321,6 +325,66 @@ body {
 .bio {
   background-color: var(--susurrus-bg);
   padding: clamp(48px, 8vh, 96px) 24px;
+  /* Leave room at the end for the fixed contact cue so it never sits over
+     the last lines of the bio. */
+  padding-bottom: calc(clamp(48px, 8vh, 96px) + 96px);
+}
+
+.contact-cue {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(20px, 5vh, 40px);
+  transform: translate(-50%, 8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 22px;
+  border: 1px solid rgba(233, 231, 220, 0.22);
+  border-radius: 999px;
+  background: rgba(44, 63, 53, 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  color: #e9e7dc;
+  text-decoration: none;
+  font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 200;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.8s ease-out,
+    transform 0.8s ease-out,
+    border-color 0.3s ease;
+  z-index: 2;
+}
+
+.contact-cue.visible {
+  opacity: 0.9;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+.contact-cue.visible:hover,
+.contact-cue.visible:focus-visible {
+  opacity: 1;
+  border-color: rgba(209, 169, 74, 0.7);
+}
+
+.contact-cue-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.contact-cue-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: #d1a94a;
 }
 
 .bio-inner {
@@ -410,5 +474,9 @@ body {
 
   .scroll-cue svg {
     animation: none;
+  }
+
+  .contact-cue {
+    transition: none;
   }
 }

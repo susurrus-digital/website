@@ -16,12 +16,15 @@
     var logo = document.querySelector(".logo");
     var bioPhoto = document.querySelector(".bio-photo");
     var bioText = document.querySelector(".bio-text");
+    var contactCue = document.querySelector(".contact-cue");
     if (!introHints.length || !logo) return;
 
     // Once the hints have had their chance to appear, hide them as soon as
     // a quarter of either the bio photo or the bio text has scrolled into
     // view (whichever comes first — they stack on narrow/mobile screens),
-    // and restore them if the user scrolls back above that point. Driven by
+    // and restore them if the user scrolls back above that point. The
+    // contact cue does the inverse, showing only while the bio is in view.
+    // Driven by
     // IntersectionObserver rather than a scroll-position threshold so it
     // tracks the actual content instead of viewport height, which is
     // unreliable on mobile browsers as their chrome shows/hides.
@@ -37,6 +40,7 @@
         introHints.forEach(function (hint) {
           hint.classList.toggle("stage-hidden", anyVisible);
         });
+        if (contactCue) contactCue.classList.toggle("visible", anyVisible);
       }
 
       var observer = new IntersectionObserver(
@@ -58,9 +62,10 @@
         introHints.forEach(function (hint) {
           hint.classList.add("visible");
         });
-        watchBioVisibility();
       }, SCROLL_CUE_DELAY_MS);
     }
+
+    watchBioVisibility();
 
     if (reducedMotion || logo.classList.contains("visible")) {
       reveal();
