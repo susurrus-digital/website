@@ -458,15 +458,15 @@ body {
   }
 
   /* Mobile-only: the intro quotes and the pronunciation tagline read too
-     small on phone screens at the sizes tuned for desktop. Doubling each
-     bound of the desktop clamp/value keeps the same proportional scaling,
-     just larger — the desktop rules above are untouched. */
+     small on phone screens at the sizes tuned for desktop. Each bound of
+     the desktop clamp/value is scaled by 1.5x (doubled, then reduced to
+     75% of that) — the desktop rules above are untouched. */
   .quote {
-    font-size: clamp(1.5rem, 1.125rem + 1.8vw, 2.625rem);
+    font-size: clamp(1.125rem, 0.84375rem + 1.35vw, 1.96875rem);
   }
 
   .tagline {
-    font-size: 1.4rem;
+    font-size: 1.05rem;
   }
 }
 
