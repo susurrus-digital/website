@@ -2,6 +2,10 @@
   "use strict";
 
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Matches the site's existing mobile/desktop CSS breakpoint. Used to run a
+  // lighter particle count on small screens (see LEAF_COUNT/BOOK_COUNT below)
+  // — the desktop experience is untouched.
+  var isMobile = window.matchMedia("(max-width: 700px)").matches;
   var SCROLL_CUE_DELAY_MS = 2000;
 
   // Reveals the "scroll for more" cue and the pronunciation tagline two
@@ -149,7 +153,7 @@
   // Quote 1 -> wind-blown leaves
   // ---------------------------------------------------------------------
 
-  var LEAF_COUNT = 22;
+  var LEAF_COUNT = isMobile ? 11 : 22;
 
   // A few different silhouettes (each with a matching vein) so 22 leaves
   // don't read as one shape copy-pasted at different sizes.
@@ -231,7 +235,7 @@
   // Quote 2 -> toppling book spines -> dots rising into the logo's shape
   // ---------------------------------------------------------------------
 
-  var BOOK_COUNT = 18;
+  var BOOK_COUNT = isMobile ? 9 : 18;
   var DOT_COUNT = 170;
   var DOT_PHASE_OFFSET_MS = 700; // dots start rising while books are still falling
   var DOT_SETTLE_HOLD_MS = 400; // brief pause once dots have formed the logo

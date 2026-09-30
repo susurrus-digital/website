@@ -456,6 +456,18 @@ body {
     max-width: 320px;
     margin: 0 auto;
   }
+
+  /* Mobile-only: the intro quotes and the pronunciation tagline read too
+     small on phone screens at the sizes tuned for desktop. Doubling each
+     bound of the desktop clamp/value keeps the same proportional scaling,
+     just larger — the desktop rules above are untouched. */
+  .quote {
+    font-size: clamp(1.5rem, 1.125rem + 1.8vw, 2.625rem);
+  }
+
+  .tagline {
+    font-size: 1.4rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
