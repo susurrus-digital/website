@@ -20,6 +20,7 @@
     var logo = document.querySelector(".logo");
     var bioPhoto = document.querySelector(".bio-photo");
     var bioText = document.querySelector(".bio-text");
+    var impactText = document.querySelector(".impact-inner");
     var contactCue = document.querySelector(".contact-cue");
     if (!introHints.length || !logo) return;
 
@@ -27,19 +28,20 @@
     // a quarter of either the bio photo or the bio text has scrolled into
     // view (whichever comes first — they stack on narrow/mobile screens),
     // and restore them if the user scrolls back above that point. The
-    // contact cue does the inverse, showing only while the bio is in view.
+    // contact cue does the inverse, showing only while the bio or the
+    // impact section below it is in view.
     // Driven by
     // IntersectionObserver rather than a scroll-position threshold so it
     // tracks the actual content instead of viewport height, which is
     // unreliable on mobile browsers as their chrome shows/hides.
     function watchBioVisibility() {
-      var targets = [bioPhoto, bioText].filter(Boolean);
+      var targets = [bioPhoto, bioText, impactText].filter(Boolean);
       if (!targets.length) return;
 
-      var visible = Object.create(null);
+      var visible = [];
       function update() {
-        var anyVisible = targets.some(function (el) {
-          return visible[el === bioPhoto ? "photo" : "text"];
+        var anyVisible = targets.some(function (el, i) {
+          return visible[i];
         });
         introHints.forEach(function (hint) {
           hint.classList.toggle("stage-hidden", anyVisible);
@@ -50,7 +52,7 @@
       var observer = new IntersectionObserver(
         function (entries) {
           entries.forEach(function (entry) {
-            visible[entry.target === bioPhoto ? "photo" : "text"] = entry.isIntersecting;
+            visible[targets.indexOf(entry.target)] = entry.isIntersecting;
           });
           update();
         },

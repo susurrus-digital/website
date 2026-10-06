@@ -325,9 +325,44 @@ body {
 .bio {
   background-color: var(--susurrus-bg);
   padding: clamp(48px, 8vh, 96px) 24px;
-  /* Leave room at the end for the fixed contact cue so it never sits over
-     the last lines of the bio. */
+}
+
+.impact {
+  background-color: var(--susurrus-bg);
+  padding: clamp(48px, 8vh, 96px) 24px;
+  /* Last section on the page: leave room at the end for the fixed contact
+     cue so it never sits over the final lines of text. */
   padding-bottom: calc(clamp(48px, 8vh, 96px) + 96px);
+}
+
+.impact-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding-top: clamp(40px, 6vh, 72px);
+  border-top: 1px solid rgba(209, 169, 74, 0.35);
+  color: #e9e7dc;
+  font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 200;
+}
+
+.impact-inner h2 {
+  margin: 0 0 28px;
+  font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  font-weight: 200;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d1a94a;
+}
+
+.impact-inner p {
+  margin: 0 0 20px;
+  font-size: clamp(0.85rem, 0.75rem + 0.4vw, 1.0625rem);
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+}
+
+.impact-inner p:last-child {
+  margin-bottom: 0;
 }
 
 .contact-cue {
