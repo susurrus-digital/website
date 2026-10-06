@@ -338,7 +338,10 @@ body {
 .impact-inner {
   max-width: 760px;
   margin: 0 auto;
-  padding-top: clamp(40px, 6vh, 72px);
+  /* Original gap below the rule, plus the same space that sits above it
+     (the bio's bottom padding + this section's top padding), so the end of
+     the bio has scrolled out of view by the time the headline arrives. */
+  padding-top: calc(clamp(40px, 6vh, 72px) + 2 * clamp(48px, 8vh, 96px));
   border-top: 1px solid rgba(209, 169, 74, 0.35);
   color: #e9e7dc;
   font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
