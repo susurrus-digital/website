@@ -4,3 +4,6 @@ assets/*.pdf
 assets/BenDoyleBio.png
 assets/BenDoyleBio2.png
 assets/.BenDoyleBio2.png
+
+# Local Claude Code / preview settings — not part of the site.
+.claude/
